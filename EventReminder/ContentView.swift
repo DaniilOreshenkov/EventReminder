@@ -1,27 +1,10 @@
 import SwiftUI
 
-struct Event: Identifiable, Equatable {
-    let id = UUID()
-    var dateString: String
-    var name: String
-    var description: String
-    var date: Date
-    var details: String
-}
-
 struct ContentView: View {
-    @State private var events: [Event] = [
-        Event(dateString: "12 декабря", name: "Мероприятие 1", description: "Описание 1", date: Date(), details: "Детали 1"),
-        Event(dateString: "15 декабря", name: "Мероприятие 2", description: "Описание 2", date: Date(), details: "Детали 2")
-    ]
-    @State private var openedEventID: UUID? = nil
-    @State private var editingEvent: Event? = nil
-    @State private var currentDate = Date()
+    
+    @StateObject private var viewModel = EventsViewModel()
     @State private var titleDisplayMode: NavigationBarItem.TitleDisplayMode = .large
     @State private var scrollOffset: CGFloat = 0
-    
-    @State private var selectedEvent: Event? = nil
-    @State private var isShowingDetail = false
     
     var body: some View {
         NavigationView {
@@ -35,17 +18,15 @@ struct ContentView: View {
                     .frame(height: 0)
                     
                     LazyVStack(spacing: 8) {
-                        ForEach(events) { event in
+                        ForEach(viewModel.events) { event in
                             SwipeableEventRow(
                                 event: event,
-                                openedEventID: $openedEventID,
+                                openedEventID: $viewModel.openedEventID,
                                 onEdit: {
-                                    editingEvent = event
+                                    viewModel.selectedEvent = event
                                 },
                                 onDelete: {
-                                    if let index = events.firstIndex(of: event) {
-                                        events.remove(at: index)
-                                    }
+                                    viewModel.deleteEvent(event)
                                 }
                             )
                             .padding(.horizontal)
@@ -70,16 +51,7 @@ struct ContentView: View {
                 VStack {
                     Spacer()
                     Button(action: {
-                        let newEvent = Event(
-                            dateString: "Новая дата",
-                            name: "Новое событие \(events.count + 1)",
-                            description: "",
-                            date: Date(),
-                            details: ""
-                        )
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            events.append(newEvent)
-                        }
+                        viewModel.addEvent()
                     }) {
                         Text("Добавить")
                             .font(.headline)
@@ -94,39 +66,18 @@ struct ContentView: View {
                 }
             }
             .edgesIgnoringSafeArea(.bottom)
-            .sheet(item: $editingEvent) { event in
+            .sheet(item: $viewModel.selectedEvent) { event in
                 AddEditEventView(existingEvent: event) { updatedEvent in
-                    if let index = events.firstIndex(where: { $0.id == event.id }) {
-                        events[index] = updatedEvent
-                    }
+                    viewModel.updateEvent(updatedEvent)
                 }
             }
             .navigationBarTitle("Мой дневник", displayMode: titleDisplayMode)
-            .toolbar {
-                if titleDisplayMode == .inline {
-                    //                    VStack {
-                    //                        Text("Сегодня, \(formattedDate)")
-                    //                            .font(.subheadline)
-                    //                            .foregroundColor(.gray)
-                    //                    }
-                    //                    .hidden()
-                    //                    .transition(.opacity.combined(with: .move(edge: .top)))
-                    //                    .animation(.easeInOut, value: titleDisplayMode)
-                }
-            }
             .onAppear {
                 Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-                    self.currentDate = Date()
+                    viewModel.currentDate = Date()
                 }
             }
         }
-    }
-    
-    var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter.string(from: currentDate)
     }
 }
 
@@ -143,7 +94,7 @@ struct EventCard: View {
     let event: Event
     let onEdit: () -> Void
     let onDelete: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(event.name)
@@ -152,7 +103,6 @@ struct EventCard: View {
             Text(event.description)
                 .font(.subheadline)
             Divider()
-            
             HStack {
                 Text("Дата: \(event.dateString)")
                     .font(.system(size: 16))
@@ -384,7 +334,8 @@ struct SwipeableEventRow: View {
         }
     }
 }
-//#Preview {
-//    ContentView()
-//}
+
+#Preview {
+    ContentView()
+}
 //.font(.custom("Bradley Hand", size: 16))
