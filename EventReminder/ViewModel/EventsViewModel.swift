@@ -3,8 +3,8 @@ import SwiftUI
 
 class EventsViewModel: ObservableObject {
     @Published var events: [Event] = [
-        Event(dateString: "12 декабря", name: "Мероприятие 1", description: "Описание 1", date: Date(), details: "Детали 1"),
-        Event(dateString: "15 декабря", name: "Мероприятие 2", description: "Описание 2", date: Date(), details: "Детали 2")
+        Event(dateString: "12 декабря", name: "Мероприятие 1", description: "Описание 1", date: Date()),
+        Event(dateString: "15 декабря", name: "Мероприятие 2", description: "Описание 2", date: Date())
     ]
     
     @Published var openedEventID: UUID? = nil
@@ -16,8 +16,7 @@ class EventsViewModel: ObservableObject {
             dateString: "Новая дата",
             name: "Новое событие \(events.count + 1)",
             description: "",
-            date: Date(),
-            details: ""
+            date: Date()
         )
         withAnimation {
             events.append(newEvent)

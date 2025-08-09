@@ -6,5 +6,4 @@ struct Event: Identifiable, Equatable {
     var name: String
     var description: String
     var date: Date
-    var details: String
 }

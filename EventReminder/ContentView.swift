@@ -138,7 +138,6 @@ struct AddEditEventView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var name: String
     @State private var description: String
-    @State private var details: String
     @State private var date: Date
     let existingEvent: Event
     var onSave: (Event) -> Void
@@ -147,7 +146,6 @@ struct AddEditEventView: View {
         self.existingEvent = existingEvent
         _name = State(initialValue: existingEvent.name)
         _description = State(initialValue: existingEvent.description)
-        _details = State(initialValue: existingEvent.details)
         _date = State(initialValue: existingEvent.date)
         self.onSave = onSave
     }
@@ -159,8 +157,6 @@ struct AddEditEventView: View {
                     TextField("Название", text: $name)
                         .font(.system(size: 16))
                     TextField("Описание", text: $description)
-                        .font(.system(size: 16))
-                    TextField("Дополнительные детали", text: $details)
                         .font(.system(size: 16))
                 }
                 Section(header: Text("Дата")) {
@@ -180,8 +176,7 @@ struct AddEditEventView: View {
                             dateString: dateString,
                             name: name,
                             description: description,
-                            date: date,
-                            details: details
+                            date: date
                         )
                         onSave(updatedEvent)
                         presentationMode.wrappedValue.dismiss()
